@@ -3,19 +3,19 @@
 .env.local
 *.pem
 
-# Dependencies
-node_modules/
-venv/
-__pycache__/
-
-# Build output
-dist/
+# Java build output
+target/
 build/
-*.exe
+out/
+*.class
+*.jar
+*.war
+*.ear
 
 # IDE / OS
 .vscode/
 .idea/
+*.iml
 Thumbs.db
 .DS_Store
 
