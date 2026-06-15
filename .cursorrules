@@ -1,0 +1,8 @@
+# Project Conventions
+Language: Always write code comments, documentation, and variable names in English. No Italian comments.
+Stack: Java (Modern clean style, follow standard naming conventions).
+
+# AI Behavior
+- Always explain the logic briefly BEFORE generating or modifying code.
+- Never add external libraries or dependencies (e.g., Maven/Gradle dependencies) without asking for explicit permission first.
+- Keep functions small and follow the Single Responsibility Principle.
