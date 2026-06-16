@@ -1,3 +1,5 @@
+package com.gestionale.garage.model;
+
 public class Vehicle {
     private Long id;
     private String make;

@@ -1,3 +1,9 @@
+package com.gestionale.garage;
+
+import com.gestionale.garage.model.FuelType;
+import com.gestionale.garage.model.Vehicle;
+import com.gestionale.garage.model.VehicleRepository;
+
 public class Main {
     public static void main(String[] args) {
         VehicleRepository repo = new VehicleRepository();
@@ -14,7 +20,7 @@ public class Main {
 
         // 2. Test Find All
         System.out.println("\n--- All vehicles in the garage: ---");
-        repo.findAll().forEach(System.out.println);
+        repo.findAll().forEach(System.out::println);
 
         // 3. Test Find By ID
         System.out.println("\n--- Searching for vehicle with ID 1: ---");
