@@ -13,7 +13,6 @@ out/
 *.ear
 
 # IDE / OS
-.vscode/
 .idea/
 *.iml
 Thumbs.db
