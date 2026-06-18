@@ -1,5 +1,6 @@
 package com.gestionale.garage.web;
 
+import com.gestionale.garage.model.FuelType;
 import com.gestionale.garage.model.Vehicle;
 import java.util.List;
 
@@ -34,8 +35,75 @@ public final class VehicleJson {
         return json.toString();
     }
 
+    public static Vehicle fromJson(String json, Long id) {
+        String make = readStringField(json, "make");
+        String model = readStringField(json, "model");
+        int year = readIntField(json, "year");
+        double price = readDoubleField(json, "price");
+        FuelType fuelType = readFuelTypeField(json, "fuelType");
+        return new Vehicle(id, make, model, year, price, fuelType);
+    }
+
     public static String errorJson(String message) {
         return "{\"error\":\"" + escape(message) + "\"}";
+    }
+
+    public static String deletedJson() {
+        return "{\"deleted\":true}";
+    }
+
+    private static String readStringField(String json, String field) {
+        String key = "\"" + field + "\":\"";
+        int start = json.indexOf(key);
+        if (start < 0) {
+            throw new IllegalArgumentException("Missing field: " + field);
+        }
+        start += key.length();
+        int end = json.indexOf('"', start);
+        if (end < 0) {
+            throw new IllegalArgumentException("Invalid JSON for field: " + field);
+        }
+        return unescape(json.substring(start, end));
+    }
+
+    private static int readIntField(String json, String field) {
+        return (int) readNumberField(json, field);
+    }
+
+    private static double readDoubleField(String json, String field) {
+        return readNumberField(json, field);
+    }
+
+    private static double readNumberField(String json, String field) {
+        String key = "\"" + field + "\":";
+        int start = json.indexOf(key);
+        if (start < 0) {
+            throw new IllegalArgumentException("Missing field: " + field);
+        }
+        start += key.length();
+        int end = start;
+        while (end < json.length()) {
+            char ch = json.charAt(end);
+            if (ch == ',' || ch == '}' || ch == ']') {
+                break;
+            }
+            end++;
+        }
+        try {
+            return Double.parseDouble(json.substring(start, end).trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid number for field: " + field);
+        }
+    }
+
+    private static FuelType readFuelTypeField(String json, String field) {
+        String value = readStringField(json, field);
+        for (FuelType fuelType : FuelType.values()) {
+            if (fuelType.name().equalsIgnoreCase(value)) {
+                return fuelType;
+            }
+        }
+        throw new IllegalArgumentException("Invalid fuelType: " + value);
     }
 
     private static String escape(String value) {
@@ -48,5 +116,36 @@ public final class VehicleJson {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
+    private static String unescape(String value) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            if (ch == '\\' && i + 1 < value.length()) {
+                char next = value.charAt(i + 1);
+                if (next == '"') {
+                    result.append('"');
+                    i++;
+                } else if (next == '\\') {
+                    result.append('\\');
+                    i++;
+                } else if (next == 'n') {
+                    result.append('\n');
+                    i++;
+                } else if (next == 'r') {
+                    result.append('\r');
+                    i++;
+                } else if (next == 't') {
+                    result.append('\t');
+                    i++;
+                } else {
+                    result.append(ch);
+                }
+            } else {
+                result.append(ch);
+            }
+        }
+        return result.toString();
     }
 }
