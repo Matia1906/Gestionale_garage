@@ -1,5 +1,6 @@
-package com.gestionale.garage.model;
+package com.gestionale.garage.repository;
 
+import com.gestionale.garage.model.Vehicle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

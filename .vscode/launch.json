@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run VehicleHttpServer",
+      "request": "launch",
+      "mainClass": "com.gestionale.garage.VehicleHttpServer",
+      "preLaunchTask": "compile-java"
+    }
+  ]
+}
