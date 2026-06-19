@@ -6,6 +6,7 @@ import com.gestionale.garage.repository.VehicleRepository;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -25,28 +26,82 @@ public class VehicleHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         try {
-            if (!"GET".equals(exchange.getRequestMethod())) {
-                sendJson(exchange, 405, VehicleJson.errorJson("Method not allowed"));
-                return;
-            }
-
+            String method = exchange.getRequestMethod();
             URI requestUri = exchange.getRequestURI();
-            String path = requestUri.getPath();
-            String remainder = path.substring(BASE_PATH.length());
+            String remainder = requestUri.getPath().substring(BASE_PATH.length());
 
-            if (remainder.isEmpty() || "/".equals(remainder)) {
-                handleList(exchange, requestUri.getQuery());
-                return;
+            if ("GET".equals(method)) {
+                if (remainder.isEmpty() || "/".equals(remainder)) {
+                    handleList(exchange, requestUri.getQuery());
+                } else if (remainder.startsWith("/")) {
+                    handleById(exchange, remainder.substring(1));
+                } else {
+                    sendJson(exchange, 404, VehicleJson.errorJson("Route not found"));
+                }
+            } else if ("POST".equals(method) && (remainder.isEmpty() || "/".equals(remainder))) {
+                handleCreate(exchange);
+            } else if ("PUT".equals(method) && remainder.startsWith("/")) {
+                handleUpdate(exchange, remainder.substring(1));
+            } else if ("DELETE".equals(method) && remainder.startsWith("/")) {
+                handleDelete(exchange, remainder.substring(1));
+            } else {
+                sendJson(exchange, 405, VehicleJson.errorJson("Method not allowed"));
             }
-
-            if (remainder.startsWith("/")) {
-                handleById(exchange, remainder.substring(1));
-                return;
-            }
-
-            sendJson(exchange, 404, VehicleJson.errorJson("Route not found"));
         } finally {
             exchange.close();
+        }
+    }
+
+    private void handleCreate(HttpExchange exchange) throws IOException {
+        try {
+            String body = readRequestBody(exchange);
+            Vehicle vehicle = VehicleJson.fromJson(body, 0L);
+            Vehicle saved = repository.add(vehicle);
+            sendJson(exchange, 201, VehicleJson.toJson(saved));
+        } catch (IllegalArgumentException e) {
+            sendJson(exchange, 400, VehicleJson.errorJson(e.getMessage()));
+        }
+    }
+
+    private void handleUpdate(HttpExchange exchange, String idSegment) throws IOException {
+        try {
+            Long id = Long.parseLong(idSegment);
+            String body = readRequestBody(exchange);
+            Vehicle vehicle = VehicleJson.fromJson(body, id);
+            Vehicle updated = repository.update(id, vehicle);
+
+            if (updated == null) {
+                sendJson(exchange, 404, VehicleJson.errorJson("Vehicle not found"));
+                return;
+            }
+
+            sendJson(exchange, 200, VehicleJson.toJson(updated));
+        } catch (NumberFormatException e) {
+            sendJson(exchange, 400, VehicleJson.errorJson("Invalid vehicle id"));
+        } catch (IllegalArgumentException e) {
+            sendJson(exchange, 400, VehicleJson.errorJson(e.getMessage()));
+        }
+    }
+
+    private void handleDelete(HttpExchange exchange, String idSegment) throws IOException {
+        try {
+            Long id = Long.parseLong(idSegment);
+            boolean deleted = repository.delete(id);
+
+            if (!deleted) {
+                sendJson(exchange, 404, VehicleJson.errorJson("Vehicle not found"));
+                return;
+            }
+
+            sendJson(exchange, 200, VehicleJson.deletedJson());
+        } catch (NumberFormatException e) {
+            sendJson(exchange, 400, VehicleJson.errorJson("Invalid vehicle id"));
+        }
+    }
+
+    private String readRequestBody(HttpExchange exchange) throws IOException {
+        try (InputStream input = exchange.getRequestBody()) {
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
 
