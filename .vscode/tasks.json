@@ -13,6 +13,7 @@
         "src/main/java/com/gestionale/garage/repository/VehicleRepository.java",
         "src/main/java/com/gestionale/garage/web/VehicleJson.java",
         "src/main/java/com/gestionale/garage/web/VehicleHandler.java",
+        "src/main/java/com/gestionale/garage/web/StaticFileHandler.java",
         "src/main/java/com/gestionale/garage/VehicleHttpServer.java"
       ],
       "group": {
