@@ -3,10 +3,26 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Run VehicleHttpServer",
+      "name": "GarageApplication",
+      "request": "launch",
+      "mainClass": "com.gestionale.garage.GarageApplication",
+      "projectName": "Gestionale_garage_6cdb38c3"
+    },
+    {
+      "type": "java",
+      "name": "Run GarageApplication",
+      "request": "launch",
+      "mainClass": "com.gestionale.garage.GarageApplication",
+      "projectName": "garage",
+      "preLaunchTask": "maven-compile"
+    },
+    {
+      "type": "java",
+      "name": "Run VehicleHttpServer (legacy)",
       "request": "launch",
       "mainClass": "com.gestionale.garage.VehicleHttpServer",
-      "preLaunchTask": "compile-java"
+      "projectName": "garage",
+      "preLaunchTask": "maven-compile"
     }
   ]
 }

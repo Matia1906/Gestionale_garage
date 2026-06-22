@@ -8,6 +8,10 @@ public class Vehicle {
     private double price;
     private FuelType fuelType;
 
+    // Required by Jackson for JSON request bodies in Spring Boot
+    public Vehicle() {
+    }
+
     // Constructor with built-in validation
     public Vehicle(Long id, String make, String model, int year, double price, FuelType fuelType) {
         if (year < 1900) {

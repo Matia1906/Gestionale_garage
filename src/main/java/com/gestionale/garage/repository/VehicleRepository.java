@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
+@Component
 public class VehicleRepository {
     // In-memory storage acting as our database table
     private final Map<Long, Vehicle> database = new HashMap<>();
