@@ -1,7 +1,7 @@
 package com.gestionale.garage.web;
 
 import com.gestionale.garage.model.Vehicle;
-import com.gestionale.garage.repository.VehicleRepository;
+import com.gestionale.garage.service.VehicleService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,52 +13,42 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/vehicles")
 public class VehicleController {
 
-    private final VehicleRepository repository;
+    private final VehicleService service;
 
-    public VehicleController(VehicleRepository repository) {
-        this.repository = repository;
+    public VehicleController(VehicleService service) {
+        this.service = service;
     }
 
     @GetMapping
     public List<Vehicle> list() {
-        return repository.findAll();
+        return service.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Vehicle> getById(@PathVariable Long id) {
-        Vehicle vehicle = repository.findById(id);
-        if (vehicle == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found");
-        }
-        return ResponseEntity.ok(vehicle);
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Vehicle> create(@RequestBody Vehicle vehicle) {
-        Vehicle saved = repository.add(vehicle);
+    public ResponseEntity<Vehicle> create(@Valid @RequestBody Vehicle vehicle) {
+        Vehicle saved = service.create(vehicle);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Vehicle> update(@PathVariable Long id, @RequestBody Vehicle vehicle) {
-        Vehicle updated = repository.update(id, vehicle);
-        if (updated == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found");
-        }
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<Vehicle> update(@PathVariable Long id, @Valid @RequestBody Vehicle vehicle) {
+        return ResponseEntity.ok(service.update(id, vehicle));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (!repository.delete(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found");
-        }
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

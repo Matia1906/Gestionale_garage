@@ -1,11 +1,25 @@
 package com.gestionale.garage.model;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class Vehicle {
     private Long id;
+
+    @NotBlank(message = "Make is required")
     private String make;
+
+    @NotBlank(message = "Model is required")
     private String model;
+
+    @Min(value = 1900, message = "Year cannot be before 1900")
     private int year;
+
+    @Min(value = 0, message = "Price cannot be negative")
     private double price;
+
+    @NotNull(message = "Fuel type is required")
     private FuelType fuelType;
 
     // Required by Jackson for JSON request bodies in Spring Boot
@@ -20,7 +34,7 @@ public class Vehicle {
         if (price < 0) {
             throw new IllegalArgumentException("Price cannot be negative!");
         }
-        
+
         this.id = id;
         this.make = make;
         this.model = model;
@@ -84,7 +98,6 @@ public class Vehicle {
         this.fuelType = fuelType;
     }
 
-    // toString method for easy debugging and console printing
     @Override
     public String toString() {
         return "Vehicle{" +
