@@ -3,10 +3,12 @@ package com.gestionale.garage;
 import com.gestionale.garage.model.FuelType;
 import com.gestionale.garage.model.Vehicle;
 import com.gestionale.garage.repository.VehicleRepository;
+import com.gestionale.garage.web.StaticFileHandler;
 import com.gestionale.garage.web.VehicleHandler;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 
 public class VehicleHttpServer {
 
@@ -16,12 +18,15 @@ public class VehicleHttpServer {
         VehicleRepository repository = seedRepository();
 
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+        Path indexPath = Path.of("public", "index.html");
+        server.createContext("/", new StaticFileHandler(indexPath));
         server.createContext("/api/vehicles", new VehicleHandler(repository));
         server.setExecutor(null);
         server.start();
 
         System.out.println("Server running on http://localhost:" + PORT);
-        System.out.println("Try: http://localhost:" + PORT + "/api/vehicles");
+        System.out.println("Open: http://localhost:" + PORT + "/");
+        System.out.println("API:  http://localhost:" + PORT + "/api/vehicles");
         Thread.currentThread().join();
     }
 

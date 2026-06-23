@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garage Manager</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1a1a1a;
+    }
+
+    h1 { margin-bottom: 0.25rem; }
+
+    .subtitle {
+      color: #555;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+    }
+
+    section {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.875rem;
+    }
+
+    input, select, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f5f5f5;
+    }
+
+    button.primary {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    button.danger {
+      background: #dc2626;
+      color: white;
+      border-color: #dc2626;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th { background: #f9fafb; }
+
+    .row-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    #message {
+      min-height: 1.25rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    #message.error { color: #dc2626; }
+    #message.success { color: #16a34a; }
+  </style>
+</head>
+<body>
+  <h1>Garage Manager</h1>
+  <p class="subtitle">Manage your vehicle inventory</p>
+
+  <div id="message"></div>
+
+  <section>
+    <h2 id="form-title">Add vehicle</h2>
+    <form id="vehicle-form">
+      <input type="hidden" id="vehicle-id" value="">
+      <label>
+        Make
+        <input type="text" id="make" required>
+      </label>
+      <label>
+        Model
+        <input type="text" id="model" required>
+      </label>
+      <label>
+        Year
+        <input type="number" id="year" min="1900" required>
+      </label>
+      <label>
+        Price
+        <input type="number" id="price" min="0" step="0.01" required>
+      </label>
+      <label>
+        Fuel type
+        <select id="fuelType" required>
+          <option value="GASOLINE">Gasoline</option>
+          <option value="DIESEL">Diesel</option>
+          <option value="ELECTRIC">Electric</option>
+          <option value="HYBRID">Hybrid</option>
+          <option value="LPG">LPG</option>
+        </select>
+      </label>
+      <div class="actions">
+        <button type="submit" class="primary" id="submit-btn">Save</button>
+        <button type="button" id="cancel-btn" hidden>Cancel</button>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <h2>Vehicles</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Make</th>
+          <th>Model</th>
+          <th>Year</th>
+          <th>Price</th>
+          <th>Fuel</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="vehicle-table-body"></tbody>
+    </table>
+  </section>
+
+  <script>
+    const API_BASE = '/api/vehicles';
+
+    const form = document.getElementById('vehicle-form');
+    const formTitle = document.getElementById('form-title');
+    const vehicleIdInput = document.getElementById('vehicle-id');
+    const makeInput = document.getElementById('make');
+    const modelInput = document.getElementById('model');
+    const yearInput = document.getElementById('year');
+    const priceInput = document.getElementById('price');
+    const fuelTypeInput = document.getElementById('fuelType');
+    const submitBtn = document.getElementById('submit-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const tableBody = document.getElementById('vehicle-table-body');
+    const messageEl = document.getElementById('message');
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = type || '';
+    }
+
+    function readFormData() {
+      return {
+        make: makeInput.value.trim(),
+        model: modelInput.value.trim(),
+        year: Number(yearInput.value),
+        price: Number(priceInput.value),
+        fuelType: fuelTypeInput.value
+      };
+    }
+
+    function resetForm() {
+      form.reset();
+      vehicleIdInput.value = '';
+      formTitle.textContent = 'Add vehicle';
+      submitBtn.textContent = 'Save';
+      cancelBtn.hidden = true;
+    }
+
+    function fillForm(vehicle) {
+      vehicleIdInput.value = vehicle.id;
+      makeInput.value = vehicle.make;
+      modelInput.value = vehicle.model;
+      yearInput.value = vehicle.year;
+      priceInput.value = vehicle.price;
+      fuelTypeInput.value = vehicle.fuelType;
+      formTitle.textContent = 'Edit vehicle';
+      submitBtn.textContent = 'Update';
+      cancelBtn.hidden = false;
+    }
+
+    async function parseError(response) {
+      try {
+        const data = await response.json();
+        return data.error || 'Request failed';
+      } catch {
+        return 'Request failed';
+      }
+    }
+
+    async function loadVehicles() {
+      const response = await fetch(API_BASE);
+
+      if (!response.ok) {
+        showMessage(await parseError(response), 'error');
+        return;
+      }
+
+      const vehicles = await response.json();
+      renderTable(vehicles);
+    }
+
+    function renderTable(vehicles) {
+      tableBody.innerHTML = '';
+
+      if (vehicles.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="7">No vehicles yet.</td>';
+        tableBody.appendChild(row);
+        return;
+      }
+
+      for (const vehicle of vehicles) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${vehicle.id}</td>
+          <td>${vehicle.make}</td>
+          <td>${vehicle.model}</td>
+          <td>${vehicle.year}</td>
+          <td>${vehicle.price}</td>
+          <td>${vehicle.fuelType}</td>
+          <td class="row-actions">
+            <button type="button" data-action="edit" data-id="${vehicle.id}">Edit</button>
+            <button type="button" class="danger" data-action="delete" data-id="${vehicle.id}">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+
+    async function createVehicle(payload) {
+      const response = await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(await parseError(response));
+      }
+
+      return response.json();
+    }
+
+    async function updateVehicle(id, payload) {
+      const response = await fetch(`${API_BASE}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(await parseError(response));
+      }
+
+      return response.json();
+    }
+
+    async function deleteVehicle(id) {
+      const response = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+
+      if (!response.ok) {
+        throw new Error(await parseError(response));
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      showMessage('');
+
+      const payload = readFormData();
+      const editingId = vehicleIdInput.value;
+
+      try {
+        if (editingId) {
+          await updateVehicle(editingId, payload);
+          showMessage('Vehicle updated.', 'success');
+        } else {
+          await createVehicle(payload);
+          showMessage('Vehicle created.', 'success');
+        }
+
+        resetForm();
+        await loadVehicles();
+      } catch (error) {
+        showMessage(error.message, 'error');
+      }
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      resetForm();
+      showMessage('');
+    });
+
+    tableBody.addEventListener('click', async (event) => {
+      const button = event.target.closest('button');
+      if (!button) {
+        return;
+      }
+
+      const id = button.dataset.id;
+      const action = button.dataset.action;
+
+      if (action === 'edit') {
+        const response = await fetch(`${API_BASE}/${id}`);
+        if (!response.ok) {
+          showMessage(await parseError(response), 'error');
+          return;
+        }
+
+        const vehicle = await response.json();
+        fillForm(vehicle);
+        showMessage('');
+        return;
+      }
+
+      if (action === 'delete') {
+        if (!confirm('Delete this vehicle?')) {
+          return;
+        }
+
+        try {
+          await deleteVehicle(id);
+          showMessage('Vehicle deleted.', 'success');
+          await loadVehicles();
+        } catch (error) {
+          showMessage(error.message, 'error');
+        }
+      }
+    });
+
+    loadVehicles();
+  </script>
+</body>
+</html>
