@@ -7,7 +7,12 @@
       "request": "launch",
       "mainClass": "com.gestionale.garage.GarageApplication",
       "projectName": "garage",
-      "preLaunchTask": "maven-compile"
+      "preLaunchTask": "maven-compile",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Tomcat started on port ([0-9]+)",
+        "uriFormat": "http://localhost:%s"
+      }
     },
     {
       "type": "java",
@@ -15,7 +20,12 @@
       "request": "launch",
       "mainClass": "com.gestionale.garage.VehicleHttpServer",
       "projectName": "garage",
-      "preLaunchTask": "maven-compile"
+      "preLaunchTask": "maven-compile",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Server running on http://localhost:([0-9]+)",
+        "uriFormat": "http://localhost:%s"
+      }
     }
   ]
 }
