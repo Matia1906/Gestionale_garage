@@ -2,7 +2,7 @@ package com.gestionale.garage.web;
 
 import com.gestionale.garage.model.FuelType;
 import com.gestionale.garage.model.Vehicle;
-import com.gestionale.garage.repository.VehicleRepository;
+import com.gestionale.garage.repository.InMemoryVehicleRepository;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
@@ -17,9 +17,9 @@ public class VehicleHandler implements HttpHandler {
 
     private static final String BASE_PATH = "/api/vehicles";
 
-    private final VehicleRepository repository;
+    private final InMemoryVehicleRepository repository;
 
-    public VehicleHandler(VehicleRepository repository) {
+    public VehicleHandler(InMemoryVehicleRepository repository) {
         this.repository = repository;
     }
 

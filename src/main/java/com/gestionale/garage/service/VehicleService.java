@@ -2,6 +2,7 @@ package com.gestionale.garage.service;
 
 import com.gestionale.garage.model.Vehicle;
 import com.gestionale.garage.repository.VehicleRepository;
+import com.gestionale.garage.repository.VehicleSpecifications;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,33 +17,45 @@ public class VehicleService {
         this.repository = repository;
     }
 
-    public List<Vehicle> findAll() {
-        return repository.findAll();
+    public List<Vehicle> findAll(VehicleFilter filter) {
+        if (filter == null || isEmpty(filter)) {
+            return repository.findAll();
+        }
+        return repository.findAll(VehicleSpecifications.matches(filter));
     }
 
     public Vehicle findById(Long id) {
-        Vehicle vehicle = repository.findById(id);
-        if (vehicle == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found");
-        }
-        return vehicle;
+        return repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
     }
 
     public Vehicle create(Vehicle vehicle) {
-        return repository.add(vehicle);
+        vehicle.setId(null);
+        return repository.save(vehicle);
     }
 
-    public Vehicle update(Long id, Vehicle vehicle) {
-        Vehicle updated = repository.update(id, vehicle);
-        if (updated == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found");
-        }
-        return updated;
+    public Vehicle update(Long id, Vehicle updates) {
+        Vehicle existing = findById(id);
+        existing.setMake(updates.getMake());
+        existing.setModel(updates.getModel());
+        existing.setYear(updates.getYear());
+        existing.setPrice(updates.getPrice());
+        existing.setFuelType(updates.getFuelType());
+        return repository.save(existing);
     }
 
     public void delete(Long id) {
-        if (!repository.delete(id)) {
+        if (!repository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found");
         }
+        repository.deleteById(id);
+    }
+
+    private boolean isEmpty(VehicleFilter filter) {
+        return (filter.make() == null || filter.make().isBlank())
+                && (filter.model() == null || filter.model().isBlank())
+                && filter.year() == null
+                && filter.price() == null
+                && filter.fuelType() == null;
     }
 }

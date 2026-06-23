@@ -2,7 +2,7 @@ package com.gestionale.garage;
 
 import com.gestionale.garage.model.FuelType;
 import com.gestionale.garage.model.Vehicle;
-import com.gestionale.garage.repository.VehicleRepository;
+import com.gestionale.garage.repository.InMemoryVehicleRepository;
 import com.gestionale.garage.web.StaticFileHandler;
 import com.gestionale.garage.web.VehicleHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -15,7 +15,7 @@ public class VehicleHttpServer {
     private static final int PORT = 8080;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        VehicleRepository repository = seedRepository();
+        InMemoryVehicleRepository repository = seedRepository();
 
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         Path indexPath = Path.of("public", "index.html");
@@ -30,8 +30,8 @@ public class VehicleHttpServer {
         Thread.currentThread().join();
     }
 
-    private static VehicleRepository seedRepository() {
-        VehicleRepository repository = new VehicleRepository();
+    private static InMemoryVehicleRepository seedRepository() {
+        InMemoryVehicleRepository repository = new InMemoryVehicleRepository();
 
         repository.add(new Vehicle(0L, "Fiat", "500", 2020, 15000, FuelType.HYBRID));
         repository.add(new Vehicle(0L, "Tesla", "Model 3", 2022, 45000, FuelType.ELECTRIC));
