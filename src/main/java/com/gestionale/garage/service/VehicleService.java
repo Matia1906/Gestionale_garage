@@ -41,6 +41,7 @@ public class VehicleService {
         existing.setYear(updates.getYear());
         existing.setPrice(updates.getPrice());
         existing.setFuelType(updates.getFuelType());
+        existing.setImageUrl(updates.getImageUrl());
         return repository.save(existing);
     }
 

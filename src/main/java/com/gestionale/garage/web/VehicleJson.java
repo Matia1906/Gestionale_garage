@@ -17,7 +17,13 @@ public final class VehicleJson {
         json.append("\"model\":\"").append(escape(vehicle.getModel())).append("\",");
         json.append("\"year\":").append(vehicle.getYear()).append(",");
         json.append("\"price\":").append(vehicle.getPrice()).append(",");
-        json.append("\"fuelType\":\"").append(vehicle.getFuelType()).append("\"");
+        json.append("\"fuelType\":\"").append(vehicle.getFuelType()).append("\",");
+        json.append("\"imageUrl\":");
+        if (vehicle.getImageUrl() == null) {
+            json.append("null");
+        } else {
+            json.append("\"").append(escape(vehicle.getImageUrl())).append("\"");
+        }
         json.append("}");
         return json.toString();
     }
@@ -41,7 +47,8 @@ public final class VehicleJson {
         int year = readIntField(json, "year");
         double price = readDoubleField(json, "price");
         FuelType fuelType = readFuelTypeField(json, "fuelType");
-        return new Vehicle(id, make, model, year, price, fuelType);
+        String imageUrl = readOptionalStringField(json, "imageUrl");
+        return new Vehicle(id, make, model, year, price, fuelType, imageUrl);
     }
 
     public static String errorJson(String message) {
@@ -50,6 +57,31 @@ public final class VehicleJson {
 
     public static String deletedJson() {
         return "{\"deleted\":true}";
+    }
+
+    private static String readOptionalStringField(String json, String field) {
+        String key = "\"" + field + "\":";
+        int start = json.indexOf(key);
+        if (start < 0) {
+            return null;
+        }
+        start += key.length();
+        while (start < json.length() && Character.isWhitespace(json.charAt(start))) {
+            start++;
+        }
+        if (start < json.length() && json.charAt(start) == 'n') {
+            return null;
+        }
+        if (start >= json.length() || json.charAt(start) != '"') {
+            throw new IllegalArgumentException("Invalid JSON for field: " + field);
+        }
+        start++;
+        int end = json.indexOf('"', start);
+        if (end < 0) {
+            throw new IllegalArgumentException("Invalid JSON for field: " + field);
+        }
+        String value = unescape(json.substring(start, end));
+        return value.isBlank() ? null : value;
     }
 
     private static String readStringField(String json, String field) {

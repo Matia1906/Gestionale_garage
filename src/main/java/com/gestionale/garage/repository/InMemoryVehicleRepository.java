@@ -22,7 +22,8 @@ public class InMemoryVehicleRepository {
             vehicle.getModel(),
             vehicle.getYear(),
             vehicle.getPrice(),
-            vehicle.getFuelType()
+            vehicle.getFuelType(),
+            vehicle.getImageUrl()
         );
 
         database.put(currentId, savedVehicle);
@@ -46,7 +47,8 @@ public class InMemoryVehicleRepository {
                 updatedVehicle.getModel(),
                 updatedVehicle.getYear(),
                 updatedVehicle.getPrice(),
-                updatedVehicle.getFuelType()
+                updatedVehicle.getFuelType(),
+                updatedVehicle.getImageUrl()
             );
             database.put(id, vehicleToSave);
             return vehicleToSave;
