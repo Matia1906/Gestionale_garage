@@ -4,7 +4,8 @@
     {
       "label": "maven-compile",
       "type": "shell",
-      "command": "mvn -q compile",
+      "command": ".\\mvnw.cmd",
+      "args": ["-q", "compile"],
       "group": {
         "kind": "build",
         "isDefault": true
@@ -14,7 +15,8 @@
     {
       "label": "spring-boot-run",
       "type": "shell",
-      "command": "mvn spring-boot:run",
+      "command": ".\\mvnw.cmd",
+      "args": ["spring-boot:run"],
       "group": "none",
       "problemMatcher": []
     }

@@ -1,32 +1,49 @@
 package com.gestionale.garage.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+@Entity
+@Table(name = "vehicle")
 public class Vehicle {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "Make is required")
+    @Column(nullable = false)
     private String make;
 
     @NotBlank(message = "Model is required")
+    @Column(nullable = false)
     private String model;
 
     @Min(value = 1900, message = "Year cannot be before 1900")
+    @Column(name = "vehicle_year", nullable = false)
     private int year;
 
     @Min(value = 0, message = "Price cannot be negative")
+    @Column(nullable = false)
     private double price;
 
     @NotNull(message = "Fuel type is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fuel_type", nullable = false)
     private FuelType fuelType;
 
-    // Required by Jackson for JSON request bodies in Spring Boot
     public Vehicle() {
     }
 
-    // Constructor with built-in validation
     public Vehicle(Long id, String make, String model, int year, double price, FuelType fuelType) {
         if (year < 1900) {
             throw new IllegalArgumentException("Year cannot be before 1900!");
@@ -43,7 +60,6 @@ public class Vehicle {
         this.fuelType = fuelType;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

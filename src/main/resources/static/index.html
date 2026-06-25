@@ -9,25 +9,46 @@
 
     body {
       font-family: system-ui, sans-serif;
-      max-width: 960px;
+      max-width: 1000px;
       margin: 2rem auto;
       padding: 0 1rem;
       color: #1a1a1a;
+      background: #f8fafc;
     }
 
     h1 { margin-bottom: 0.25rem; }
 
     .subtitle {
-      color: #555;
+      color: #64748b;
       margin-top: 0;
       margin-bottom: 1.5rem;
     }
 
     section {
-      margin-bottom: 2rem;
-      padding: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    section h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .filter-section {
+      border-color: #c7d2fe;
+      background: linear-gradient(180deg, #f8faff 0%, #fff 100%);
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      align-items: end;
     }
 
     form {
@@ -42,11 +63,19 @@
       flex-direction: column;
       gap: 0.25rem;
       font-size: 0.875rem;
+      color: #475569;
     }
 
     input, select, button {
-      padding: 0.5rem;
+      padding: 0.5rem 0.65rem;
       font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid #93c5fd;
+      border-color: #3b82f6;
     }
 
     .actions {
@@ -57,15 +86,25 @@
 
     button {
       cursor: pointer;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #f5f5f5;
+      background: #f1f5f9;
+      transition: background 0.15s, transform 0.1s;
     }
+
+    button:hover { background: #e2e8f0; }
+    button:active { transform: scale(0.98); }
 
     button.primary {
       background: #2563eb;
       color: white;
       border-color: #2563eb;
+    }
+
+    button.primary:hover { background: #1d4ed8; }
+
+    button.ghost {
+      background: transparent;
+      border-color: #94a3b8;
+      color: #475569;
     }
 
     button.danger {
@@ -74,18 +113,59 @@
       border-color: #dc2626;
     }
 
+    button.danger:hover { background: #b91c1c; }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      min-height: 1.5rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      background: #e0e7ff;
+      color: #3730a3;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .chip-muted {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .result-count {
+      margin-top: 0.75rem;
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
     }
 
     th, td {
-      padding: 0.5rem;
+      padding: 0.65rem 0.5rem;
       text-align: left;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    th { background: #f9fafb; }
+    th {
+      background: #f8fafc;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+    }
+
+    tbody tr:hover { background: #f8fafc; }
 
     .row-actions {
       display: flex;
@@ -96,15 +176,32 @@
       min-height: 1.25rem;
       margin-bottom: 1rem;
       font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
     }
 
-    #message.error { color: #dc2626; }
-    #message.success { color: #16a34a; }
+    #message.error {
+      color: #b91c1c;
+      background: #fef2f2;
+    }
+
+    #message.success {
+      color: #15803d;
+      background: #f0fdf4;
+    }
+
+    .h2-console-hint {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 0;
+    }
+
+    .h2-console-hint a { color: #2563eb; }
   </style>
 </head>
 <body>
   <h1>Garage Manager</h1>
-  <p class="subtitle">Manage your vehicle inventory</p>
+  <p class="subtitle">Vehicles stored in H2 — open the <a href="/h2-console" target="_blank">H2 console</a> and run <code>SELECT * FROM vehicle</code></p>
 
   <div id="message"></div>
 
@@ -145,6 +242,45 @@
     </form>
   </section>
 
+  <section class="filter-section">
+    <h2>Filter vehicles</h2>
+    <div class="filter-grid">
+      <label>
+        Make
+        <input type="text" id="filter-make" placeholder="e.g. Fiat">
+      </label>
+      <label>
+        Model
+        <input type="text" id="filter-model" placeholder="e.g. 500">
+      </label>
+      <label>
+        Year
+        <input type="number" id="filter-year" min="1900" placeholder="e.g. 2020">
+      </label>
+      <label>
+        Price
+        <input type="number" id="filter-price" min="0" step="0.01" placeholder="exact match">
+      </label>
+      <label>
+        Fuel type
+        <select id="filter-fuelType">
+          <option value="">Any</option>
+          <option value="GASOLINE">Gasoline</option>
+          <option value="DIESEL">Diesel</option>
+          <option value="ELECTRIC">Electric</option>
+          <option value="HYBRID">Hybrid</option>
+          <option value="LPG">LPG</option>
+        </select>
+      </label>
+      <div class="actions">
+        <button type="button" class="primary" id="apply-filters-btn">Apply filters</button>
+        <button type="button" class="ghost" id="clear-filters-btn">Clear</button>
+      </div>
+    </div>
+    <div class="filter-chips" id="filter-chips"></div>
+    <p class="result-count" id="result-count"></p>
+  </section>
+
   <section>
     <h2>Vehicles</h2>
     <table>
@@ -179,6 +315,18 @@
     const tableBody = document.getElementById('vehicle-table-body');
     const messageEl = document.getElementById('message');
 
+    const filterMake = document.getElementById('filter-make');
+    const filterModel = document.getElementById('filter-model');
+    const filterYear = document.getElementById('filter-year');
+    const filterPrice = document.getElementById('filter-price');
+    const filterFuelType = document.getElementById('filter-fuelType');
+    const applyFiltersBtn = document.getElementById('apply-filters-btn');
+    const clearFiltersBtn = document.getElementById('clear-filters-btn');
+    const filterChipsEl = document.getElementById('filter-chips');
+    const resultCountEl = document.getElementById('result-count');
+
+    let activeFilters = {};
+
     function showMessage(text, type) {
       messageEl.textContent = text;
       messageEl.className = type || '';
@@ -192,6 +340,45 @@
         price: Number(priceInput.value),
         fuelType: fuelTypeInput.value
       };
+    }
+
+    function readFilterValues() {
+      return {
+        make: filterMake.value.trim(),
+        model: filterModel.value.trim(),
+        year: filterYear.value ? Number(filterYear.value) : null,
+        price: filterPrice.value ? Number(filterPrice.value) : null,
+        fuelType: filterFuelType.value || null
+      };
+    }
+
+    function buildQueryString(filters) {
+      const params = new URLSearchParams();
+      if (filters.make) params.set('make', filters.make);
+      if (filters.model) params.set('model', filters.model);
+      if (filters.year != null) params.set('year', filters.year);
+      if (filters.price != null) params.set('price', filters.price);
+      if (filters.fuelType) params.set('fuelType', filters.fuelType);
+      const query = params.toString();
+      return query ? `?${query}` : '';
+    }
+
+    function renderFilterChips(filters) {
+      const chips = [];
+      if (filters.make) chips.push({ label: 'Make', value: filters.make });
+      if (filters.model) chips.push({ label: 'Model', value: filters.model });
+      if (filters.year != null) chips.push({ label: 'Year', value: filters.year });
+      if (filters.price != null) chips.push({ label: 'Price', value: filters.price });
+      if (filters.fuelType) chips.push({ label: 'Fuel', value: filters.fuelType });
+
+      if (chips.length === 0) {
+        filterChipsEl.innerHTML = '<span class="chip chip-muted">No filters active — showing all vehicles</span>';
+        return;
+      }
+
+      filterChipsEl.innerHTML = chips
+        .map((chip) => `<span class="chip">${chip.label}: ${chip.value}</span>`)
+        .join('');
     }
 
     function resetForm() {
@@ -224,7 +411,8 @@
     }
 
     async function loadVehicles() {
-      const response = await fetch(API_BASE);
+      const query = buildQueryString(activeFilters);
+      const response = await fetch(`${API_BASE}${query}`);
 
       if (!response.ok) {
         showMessage(await parseError(response), 'error');
@@ -233,6 +421,8 @@
 
       const vehicles = await response.json();
       renderTable(vehicles);
+      resultCountEl.textContent = `${vehicles.length} vehicle(s) found`;
+      renderFilterChips(activeFilters);
     }
 
     function renderTable(vehicles) {
@@ -240,7 +430,7 @@
 
       if (vehicles.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="7">No vehicles yet.</td>';
+        row.innerHTML = '<td colspan="7">No vehicles match these filters.</td>';
         tableBody.appendChild(row);
         return;
       }
@@ -298,6 +488,21 @@
         throw new Error(await parseError(response));
       }
     }
+
+    applyFiltersBtn.addEventListener('click', () => {
+      activeFilters = readFilterValues();
+      loadVehicles();
+    });
+
+    clearFiltersBtn.addEventListener('click', () => {
+      filterMake.value = '';
+      filterModel.value = '';
+      filterYear.value = '';
+      filterPrice.value = '';
+      filterFuelType.value = '';
+      activeFilters = {};
+      loadVehicles();
+    });
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
