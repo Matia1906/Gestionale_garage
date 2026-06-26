@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.URL;
 
 @Entity
 @Table(name = "vehicle")
@@ -41,10 +42,18 @@ public class Vehicle {
     @Column(name = "fuel_type", nullable = false)
     private FuelType fuelType;
 
+    @URL(message = "Image URL must be a valid http or https URL")
+    @Column(name = "image_url")
+    private String imageUrl;
+
     public Vehicle() {
     }
 
     public Vehicle(Long id, String make, String model, int year, double price, FuelType fuelType) {
+        this(id, make, model, year, price, fuelType, null);
+    }
+
+    public Vehicle(Long id, String make, String model, int year, double price, FuelType fuelType, String imageUrl) {
         if (year < 1900) {
             throw new IllegalArgumentException("Year cannot be before 1900!");
         }
@@ -58,6 +67,7 @@ public class Vehicle {
         this.year = year;
         this.price = price;
         this.fuelType = fuelType;
+        setImageUrl(imageUrl);
     }
 
     public Long getId() {
@@ -114,6 +124,18 @@ public class Vehicle {
         this.fuelType = fuelType;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        if (imageUrl != null && imageUrl.isBlank()) {
+            this.imageUrl = null;
+        } else {
+            this.imageUrl = imageUrl;
+        }
+    }
+
     @Override
     public String toString() {
         return "Vehicle{" +
@@ -123,6 +145,7 @@ public class Vehicle {
                 ", year=" + year +
                 ", price=" + price +
                 ", fuelType=" + fuelType +
+                ", imageUrl='" + imageUrl + '\'' +
                 '}';
     }
 }

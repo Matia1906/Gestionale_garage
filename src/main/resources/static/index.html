@@ -167,6 +167,25 @@
 
     tbody tr:hover { background: #f8fafc; }
 
+    .vehicle-thumb {
+      width: 72px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: #f1f5f9;
+      display: block;
+    }
+
+    .no-image {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
     .row-actions {
       display: flex;
       gap: 0.5rem;
@@ -235,6 +254,10 @@
           <option value="LPG">LPG</option>
         </select>
       </label>
+      <label class="full-width">
+        Image URL
+        <input type="url" id="imageUrl" placeholder="https://example.com/car.jpg">
+      </label>
       <div class="actions">
         <button type="submit" class="primary" id="submit-btn">Save</button>
         <button type="button" id="cancel-btn" hidden>Cancel</button>
@@ -292,6 +315,7 @@
           <th>Year</th>
           <th>Price</th>
           <th>Fuel</th>
+          <th>Image</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -310,6 +334,7 @@
     const yearInput = document.getElementById('year');
     const priceInput = document.getElementById('price');
     const fuelTypeInput = document.getElementById('fuelType');
+    const imageUrlInput = document.getElementById('imageUrl');
     const submitBtn = document.getElementById('submit-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     const tableBody = document.getElementById('vehicle-table-body');
@@ -332,13 +357,23 @@
       messageEl.className = type || '';
     }
 
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
     function readFormData() {
+      const imageUrl = imageUrlInput.value.trim();
       return {
         make: makeInput.value.trim(),
         model: modelInput.value.trim(),
         year: Number(yearInput.value),
         price: Number(priceInput.value),
-        fuelType: fuelTypeInput.value
+        fuelType: fuelTypeInput.value,
+        imageUrl: imageUrl || null
       };
     }
 
@@ -396,6 +431,7 @@
       yearInput.value = vehicle.year;
       priceInput.value = vehicle.price;
       fuelTypeInput.value = vehicle.fuelType;
+      imageUrlInput.value = vehicle.imageUrl || '';
       formTitle.textContent = 'Edit vehicle';
       submitBtn.textContent = 'Update';
       cancelBtn.hidden = false;
@@ -430,20 +466,25 @@
 
       if (vehicles.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="7">No vehicles match these filters.</td>';
+        row.innerHTML = '<td colspan="8">No vehicles match these filters.</td>';
         tableBody.appendChild(row);
         return;
       }
 
       for (const vehicle of vehicles) {
+        const imageCell = vehicle.imageUrl
+          ? `<img class="vehicle-thumb" src="${escapeHtml(vehicle.imageUrl)}" alt="${escapeHtml(vehicle.make + ' ' + vehicle.model)}" loading="lazy">`
+          : '<span class="no-image">No image</span>';
+
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${vehicle.id}</td>
-          <td>${vehicle.make}</td>
-          <td>${vehicle.model}</td>
+          <td>${escapeHtml(vehicle.make)}</td>
+          <td>${escapeHtml(vehicle.model)}</td>
           <td>${vehicle.year}</td>
           <td>${vehicle.price}</td>
-          <td>${vehicle.fuelType}</td>
+          <td>${escapeHtml(vehicle.fuelType)}</td>
+          <td>${imageCell}</td>
           <td class="row-actions">
             <button type="button" data-action="edit" data-id="${vehicle.id}">Edit</button>
             <button type="button" class="danger" data-action="delete" data-id="${vehicle.id}">Delete</button>
